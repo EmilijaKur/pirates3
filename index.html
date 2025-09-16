@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pirates of the Caribbean Compass</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Pirata One', cursive;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: black;
+      color: white;
+      text-align: center;
+    }
+    #scene {
+      width: 80%;
+      height: 80%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 4px solid goldenrod;
+      border-radius: 20px;
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 0 30px gold;
+    }
+    #label {
+      position: absolute;
+      bottom: 20px;
+      font-size: 2rem;
+      text-shadow: 2px 2px 5px black;
+    }
+  </style>
+</head>
+<body>
+  <div id="scene"></div>
+  <div id="label">Move your phone like a compass...</div>
+  <h1>Where do you want to go?</h1>
+
+  <script>
+    const scene = document.getElementById("scene");
+    const label = document.getElementById("label");
+    const mx = document.getElementById('mx');
+    const my = document.getElementById('my');
+    const mz = document.getElementById('mz');
+
+    // Pirates themes (replace with real images/links)
+    const pirates = [
+      {name: "To Jack Sparrow", img: "https://static0.colliderimages.com/wordpress/wp-content/uploads/2024/05/johnny-depp-as-jack-sparrow-running-away-in-pirates-of-the-caribbean-dead-man-s-chest.jpg?w=1600&h=900&fit=crop"},
+      {name: "Fight the Captain Salazar", img: "https://d23.com/app/uploads/2017/05/780w-463h_053117_pirates-vfx-1.jpg"},
+      {name: "To Davy Jones", img: "https://i.redd.it/davy-jones-probably-a-bit-ambitious-to-start-as-a-project-v0-ztbtc8o4qyx91.jpg?width=3072&format=pjpg&auto=webp&s=629b7fd2a6e8fb407946f2cac5db7b80d4b03591"},
+      {name: "Reach the land", img: "https://i.redd.it/i-visited-the-original-pirates-of-the-caribbean-movie-set-v0-73s15lfz3t7d1.jpg?width=2000&format=pjpg&auto=webp&s=1b5481caa6f8c586ceb812f45afd2f6e8ae4cb70"}
+    ];
+
+    // Request orientation permission (for iOS Safari)
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+      document.body.addEventListener('click', () => {
+        DeviceOrientationEvent.requestPermission().then(response => {
+          if (response === 'granted') {
+            window.addEventListener('deviceorientation', handleOrientation);
+          }
+        });
+      });
+    } else {
+      window.addEventListener('deviceorientation', handleOrientation);
+    }
+
+    function handleOrientation(event) {
+      if (event.absolute === false && event.alpha === null) {
+        label.innerText = "Magnetic sensor not supported!";
+        return;
+      }
+
+      // Use compass heading (alpha = rotation around Z axis)
+      let heading = event.alpha; // 0 - 360 degrees
+
+      if (heading !== null) {
+        // Divide compass into 4 pirate zones
+        let index = Math.floor((heading / 360) * pirates.length);
+        let pirate = pirates[index];
+
+        scene.style.backgroundImage = `url('${pirate.img}')`;
+        label.innerText = pirate.name + " (" + heading.toFixed(0) + "°)";
+      }
+    }
+    if ('Magnetometer' in window) {
+  const mx = document.getElementById('mx');
+  const my = document.getElementById('my');
+  const mz = document.getElementById('mz');
+
+  try {
+    const magnetometer = new Magnetometer({frequency: 10});
+    magnetometer.addEventListener('reading', () => {
+      mx.textContent = magnetometer.x.toFixed(2);
+      my.textContent = magnetometer.y.toFixed(2);
+      mz.textContent = magnetometer.z.toFixed(2);
+
+      // Example: Map X to pirate index
+      let index = Math.floor(((magnetometer.x + 50) / 100) * pirates.length);
+      if (index < 0) index = 0;
+      if (index >= pirates.length) index = pirates.length - 1;
+      const pirate = pirates[index];
+      scene.style.backgroundImage = `url('${pirate.img}')`;
+      label.innerText = pirate.name + " (X: " + magnetometer.x.toFixed(1) + ")";
+    });
+    magnetometer.start();
+  } catch (error) {
+    console.error(error);
+  }
+}
+  </script>
+</body>
+</html>
